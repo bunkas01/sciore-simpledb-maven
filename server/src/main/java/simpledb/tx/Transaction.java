@@ -19,6 +19,8 @@ public class Transaction {
    private ConcurrencyMgr concurMgr;
    private int txnum;
    private BufferList myBuffers = new BufferList();
+   public static Object tLock = new Object();
+   public static Boolean inProgress = new Boolean(false);
    
    /**
     * Creates a new transaction and its associated 
