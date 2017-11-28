@@ -34,7 +34,7 @@ class BufferList {
       buffers.put(blk, buff);
       pins.add(blk);
    }
-   
+      
    /**
     * Appends a new block to the specified file
     * and pins it.
