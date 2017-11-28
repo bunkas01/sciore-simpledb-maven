@@ -39,6 +39,10 @@ public class BufferMgr {
       bufferMgr = new BasicBufferMgr(numbuffers);
    }
    
+   public void completeFlush() {
+       bufferMgr.completeFlush();
+   }
+   
    /**
     * Pins a buffer to the specified block, potentially
     * waiting until a buffer becomes available.
