@@ -5,6 +5,12 @@ import simpledb.file.Block;
 import simpledb.buffer.*;
 import simpledb.tx.recovery.RecoveryMgr;
 import simpledb.tx.concurrency.ConcurrencyMgr;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import simpledb.tx.recovery.CheckpointThread;
 
 /**
  * Provides transaction management for clients,
@@ -19,6 +25,8 @@ public class Transaction {
    private ConcurrencyMgr concurMgr;
    private int txnum;
    private BufferList myBuffers = new BufferList();
+   public static Object tLock = new Object();
+   public static List<Transaction> running = Collections.synchronizedList(new ArrayList<Transaction>());
    
    /**
     * Creates a new transaction and its associated 
@@ -34,8 +42,20 @@ public class Transaction {
     */
    public Transaction() {
       txnum       = nextTxNumber();
+      while (CheckpointThread.inProgress) {
+          try {
+              tLock.wait();
+          } catch (InterruptedException ex) {
+              Logger.getLogger(Transaction.class.getName()).log(Level.SEVERE, null, ex);
+          }
+      }
       recoveryMgr = new RecoveryMgr(txnum);
       concurMgr   = new ConcurrencyMgr();
+      running.add(this);
+      if (running.size() == 10) {
+          CheckpointThread.inProgress = true;
+          new Thread(new CheckpointThread()).start();
+      }
    }
    
    /**
@@ -49,6 +69,7 @@ public class Transaction {
       concurMgr.release();
       myBuffers.unpinAll();
       System.out.println("transaction " + txnum + " committed");
+      running.remove(this);
    }
    
    /**
@@ -63,6 +84,7 @@ public class Transaction {
       concurMgr.release();
       myBuffers.unpinAll();
       System.out.println("transaction " + txnum + " rolled back");
+      running.remove(this);
    }
    
    /**

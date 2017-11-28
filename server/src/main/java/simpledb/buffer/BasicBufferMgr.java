@@ -42,6 +42,12 @@ class BasicBufferMgr {
          buff.flush();
    }
    
+   synchronized public void completeFlush() {
+       for (Buffer buff : bufferpool) {
+           buff.flush();
+       }
+   }
+   
    /**
     * Pins a buffer to the specified block. 
     * If there is already a buffer assigned to that block
