@@ -16,7 +16,7 @@ import simpledb.server.SimpleDB;
  */
 public class CheckpointThread implements Runnable{
     public static Object cLock = new Object();
-    public static Boolean inProgress = new Boolean(true);
+    public static Boolean inProgress = false;
     
     public CheckpointThread() {}
     
@@ -31,5 +31,9 @@ public class CheckpointThread implements Runnable{
         
         // Start actual recovery process
         SimpleDB.bufferMgr().completeFlush();
+        int lsn = new CheckpointRecord().writeToLog();
+        SimpleDB.logMgr().flush(lsn);
+        inProgress = false;
+        Transaction.tLock.notifyAll();
     }
 }

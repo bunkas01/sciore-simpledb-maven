@@ -54,6 +54,7 @@ public class Transaction {
       running.add(this);
       if (running.size() == 10) {
           CheckpointThread.inProgress = true;
+          new Thread(new CheckpointThread()).start();
       }
    }
    
