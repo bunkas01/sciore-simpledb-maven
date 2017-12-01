@@ -110,6 +110,13 @@ class BasicBufferMgr {
     * @param buff the buffer to be unpinned
     */
    synchronized void unpin(Buffer buff) {
+      time++;
+      int i;
+      for (i=0; i<bufferpool.length; i++) {
+          if (buff == bufferpool[i])
+              break;
+      }
+      timeOut[i] = time;
       buff.unpin();
       if (!buff.isPinned())
          numAvailable++;
@@ -172,13 +179,21 @@ class BasicBufferMgr {
    }
    /**
     * FIFO buffer selection strategy
+    * 
+    * The first buffer is initially assumed to be the least recently pinned.
+    * This is iteratively tested, with the index of the lowest entry of timeIn
+    * saved as the index of the least recently pinned buffer. This is then used
+    * to extract that buffer from the bufferpool, as the indices correspond.
+    * finally, the buffer is double-checked to ensure that it isn't currently
+    * pinned.
+    * 
     * @return 
     */
    private Buffer useFIFOStrategy() {
         int first = timeIn[0];
         int firstDex = 0;
         for (int i=1; i<timeIn.length; i++) {
-            if (timeIn[i] < first) {
+            if (timeIn[i] < first & !bufferpool[i].isPinned()) {
                 first = timeIn[i];
                 firstDex = i;
             }
@@ -191,10 +206,29 @@ class BasicBufferMgr {
    }
    /**
     * LRU buffer selection strategy
+    * 
+    * The first buffer is initially assumed to be the least recently unpinned.
+    * This is iterativley tested, with the index of the lowest entry of timeOut
+    * saved as the index of the least recently unpinned corresponding buffer.
+    * A final double check that the corresponding buffer is unpinned verifies
+    * that it is an acceptable return value.
+    * 
     * @return 
     */
    private Buffer useLRUStrategy() {
-      throw new UnsupportedOperationException();
+      int first = timeOut[0];
+      int firstDex = 0;
+      for (int i=1; i<timeOut.length; i++) {
+          if (timeOut[i] < first & !bufferpool[i].isPinned()) {
+              first = timeOut[i];
+              firstDex = i;
+          }
+      }
+      Buffer buff = bufferpool[firstDex];
+      if (!buff.isPinned()) {
+          return buff;
+      }
+      return null;
    }
    /**
     * Clock buffer selection strategy
