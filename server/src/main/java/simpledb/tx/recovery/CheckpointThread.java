@@ -33,6 +33,7 @@ public class CheckpointThread implements Runnable{
         SimpleDB.bufferMgr().completeFlush();
         int lsn = new CheckpointRecord().writeToLog();
         SimpleDB.logMgr().flush(lsn);
+        System.out.println("Checkpoint Created.");
         inProgress = false;
         Transaction.tLock.notifyAll();
     }
