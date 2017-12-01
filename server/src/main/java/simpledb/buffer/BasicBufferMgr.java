@@ -232,9 +232,20 @@ class BasicBufferMgr {
    }
    /**
     * Clock buffer selection strategy
+    * 
+    * The clock hand's position is calculated using the time data member. Since
+    * every pin/unpin operation updates the time, this allows the clock hand's
+    * rotation to be inferred from the time, as the remainder of the time
+    * divided by the number of buffers.
+    * 
     * @return 
     */
    private Buffer useClockStrategy() {
-      throw new UnsupportedOperationException();
+      int hand = time % bufferpool.length;
+      Buffer buff = bufferpool[hand];
+      if (!buff.isPinned()) {
+          return buff;
+      }
+      return null;
    }
 }
