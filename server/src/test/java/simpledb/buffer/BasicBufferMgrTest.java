@@ -75,7 +75,6 @@ public class BasicBufferMgrTest {
    */
   @Test
   public void testFIFOStrategy() {
-    thrown.expect(UnsupportedOperationException.class); //  remove this line once useFIFOStrategy is implemented
     int expectedResult, result;
     System.out.println("FIFO Strategy");
     instance.setStrategy(1);

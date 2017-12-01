@@ -11,6 +11,11 @@ class BasicBufferMgr {
    private Buffer[] bufferpool;
    private int numAvailable;
    private int strategy;
+   private int time;  // Tracks the time at which pins/unpins occur.
+   private int[] timeIn;  // Tracks the time at which the buffer at the same
+   // index was pinned.
+   private int[] timeOut; // Tracks the time at which the buffer at the same
+   //index was unpinned.
 
    /**
     * Creates a buffer manager having the specified number 
@@ -26,7 +31,10 @@ class BasicBufferMgr {
     * @param numbuffs the number of buffer slots to allocate
     */
    BasicBufferMgr(int numbuffs) {
+      time = 0;
       bufferpool = new Buffer[numbuffs];
+      timeIn = new int[numbuffs];  // initialising timeIn array.
+      timeOut = new int[numbuffs];  // initialising timeOut array.
       numAvailable = numbuffs;
       for (int i=0; i<numbuffs; i++)
          bufferpool[i] = new Buffer();
@@ -58,15 +66,22 @@ class BasicBufferMgr {
     * @return the pinned buffer
     */
    synchronized Buffer pin(Block blk) {
-      Buffer buff = findExistingBuffer(blk);
-      if (buff == null) {
-         buff = chooseUnpinnedBuffer();
-         if (buff == null)
-            return null;
-         buff.assignToBlock(blk);
-      }
+        time++;
+        Buffer buff = findExistingBuffer(blk);
+        if (buff == null) {
+            buff = chooseUnpinnedBuffer();
+            if (buff == null)
+                return null;
+            buff.assignToBlock(blk);
+        }
       if (!buff.isPinned())
-         numAvailable--;
+        numAvailable--;
+      int i;
+      for (i=0; i<bufferpool.length; i++) {
+          if (buff == bufferpool[i])
+              break;
+      }
+      timeIn[i] = time;
       buff.pin();
       return buff;
    }
@@ -146,12 +161,13 @@ class BasicBufferMgr {
    }
    /**
     * Naive buffer selection strategy
-    * @return 
+    * @return
     */
    private Buffer useNaiveStrategy() {
       for (Buffer buff : bufferpool)
          if (!buff.isPinned())
-         return buff;
+            return buff;
+
       return null;
    }
    /**
@@ -159,7 +175,19 @@ class BasicBufferMgr {
     * @return 
     */
    private Buffer useFIFOStrategy() {
-      throw new UnsupportedOperationException();
+        int first = timeIn[0];
+        int firstDex = 0;
+        for (int i=1; i<timeIn.length; i++) {
+            if (timeIn[i] < first) {
+                first = timeIn[i];
+                firstDex = i;
+            }
+        }
+        Buffer buff = bufferpool[firstDex];
+        if (!buff.isPinned()) {
+            return buff;
+        }
+        return null;
    }
    /**
     * LRU buffer selection strategy
