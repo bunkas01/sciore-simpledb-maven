@@ -16,6 +16,8 @@ class BasicBufferMgr {
    // index was pinned.
    private int[] timeOut; // Tracks the time at which the buffer at the same
    //index was unpinned.
+   private int reference; // The most recently referenced Buffer, for use by the
+   // clock strategy of Buffer replacement.
 
    /**
     * Creates a buffer manager having the specified number 
@@ -82,6 +84,7 @@ class BasicBufferMgr {
               break;
       }
       timeIn[i] = time;
+      reference = i;
       timeOut[i] = Integer.MAX_VALUE;  // Deals with a buffer being mistakenly
       // picked by LRU when timeOut hasn't yet been reset.
       buff.pin();
@@ -108,6 +111,7 @@ class BasicBufferMgr {
               break;
       }
       timeIn[i] = time;
+      reference = i;
       timeOut[i] = Integer.MAX_VALUE;  // Ensures LRU doesn't mistakenly pick
       // a buffer where timeout was inherited from an old one.
       numAvailable--;
@@ -245,18 +249,25 @@ class BasicBufferMgr {
    /**
     * Clock buffer selection strategy
     * 
-    * The clock hand's position is calculated using the time data member. Since
-    * every pin/unpin operation updates the time, this allows the clock hand's
-    * rotation to be inferred from the time, as the remainder of the time
-    * divided by the number of buffers.
+    * The reference int serves to denote the most recently referenced page, as
+    * determined based on the most recent pinning of a buffer. The iterator of
+    * possible buffers then goes through the bufferpool in circular fashion
+    * looking for the first non-pinned buffer, stopping at the original
+    * reference position.
     * 
     * @return 
     */
    private Buffer useClockStrategy() {
-      int hand = time % bufferpool.length;
-      Buffer buff = bufferpool[hand];
-      if (!buff.isPinned()) {
-          return buff;
+      Buffer buff;
+      int i = reference+1;
+      for (int c = 0; c<bufferpool.length; c++) {
+          buff = bufferpool[i];
+          if (!buff.isPinned()) {
+              return buff;
+          }
+          i++;
+          if (i>3)
+              i=0;
       }
       return null;
    }
