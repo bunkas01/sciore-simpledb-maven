@@ -82,6 +82,8 @@ class BasicBufferMgr {
               break;
       }
       timeIn[i] = time;
+      timeOut[i] = Integer.MAX_VALUE;  // Deals with a buffer being mistakenly
+      // picked by LRU when timeOut hasn't yet been reset.
       buff.pin();
       return buff;
    }
@@ -100,6 +102,14 @@ class BasicBufferMgr {
       if (buff == null)
          return null;
       buff.assignToNew(filename, fmtr);
+      int i;
+      for (i=0; i<bufferpool.length; i++) {
+          if (buff == bufferpool[i])
+              break;
+      }
+      timeIn[i] = time;
+      timeOut[i] = Integer.MAX_VALUE;  // Ensures LRU doesn't mistakenly pick
+      // a buffer where timeout was inherited from an old one.
       numAvailable--;
       buff.pin();
       return buff;
@@ -116,10 +126,12 @@ class BasicBufferMgr {
           if (buff == bufferpool[i])
               break;
       }
-      timeOut[i] = time;
       buff.unpin();
-      if (!buff.isPinned())
+      if (!buff.isPinned()) {
          numAvailable++;
+         timeOut[i] = time;  // Sets the correct timeout for the corresponding
+         // buffer when it is fully unpinned.
+      }
    }
    
    /**
