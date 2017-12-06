@@ -33,4 +33,29 @@ public class JoinPlan implements Plan {
     public Schema schema() {
         return schema;
     }
+    
+    public int blocksAccessed() {
+        Plan p = new ProductPlan(p1, p2);
+      return p.blocksAccessed();
+   }
+    
+    public int recordsOutput() {
+      Plan p = new ProductPlan(p1, p2);
+      return p.recordsOutput() / pred.reductionFactor(p);
+   }
+    
+    public int distinctValues(String fldname) {
+      Plan p = new ProductPlan(p1, p2);
+      if (pred.equatesWithConstant(fldname) != null)
+         return 1;
+      else {
+         String fldname2 = pred.equatesWithField(fldname);
+         if (fldname2 != null) 
+            return Math.min(p.distinctValues(fldname),
+                            p.distinctValues(fldname2));
+         else
+            return Math.min(p.distinctValues(fldname),
+                            recordsOutput());
+      }
+   }
 }

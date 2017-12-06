@@ -9,6 +9,6 @@ package simpledb.query;
  *
  * @author Ashleigh
  */
-public class RenameScan implements Scan {
-    
-}
+//public class RenameScan implements Scan {
+//    
+//}

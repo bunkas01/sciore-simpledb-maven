@@ -5,10 +5,10 @@
  */
 package simpledb.query;
 
-/**
- *
- * @author Ashleigh
- */
-public class RenamePlan implements Plan {
-    
-}
+///**
+// *
+// * @author Ashleigh
+// */
+//public class RenamePlan implements Plan {
+//    
+//}
