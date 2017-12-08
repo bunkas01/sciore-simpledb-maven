@@ -5,17 +5,22 @@
  */
 package simpledb.query;
 
+import java.util.Collection;
+
 /**
  *
  * @author Ashleigh
  */
-public class SemiJoinScan {
+public class SemiJoinScan implements Scan{
     private Scan prod;
     private Predicate pred;
+    private Collection<String> fields;
     
-    public SemiJoinScan(Scan s1, Scan s2, Predicate pred) {
+    public SemiJoinScan(Scan s1, Scan s2, Predicate pred,
+                        Collection<String> fieldlist) {
         this.prod = new ProductScan(s1, s2);
         this.pred = pred;
+        this.fields = fieldlist;
     }
     
     public void beforeFirst() {
@@ -30,7 +35,7 @@ public class SemiJoinScan {
     }
     
     public void close() {
-        prod.close()
+        prod.close();
     }
     
     public Constant getVal(String fldname) {
@@ -41,14 +46,26 @@ public class SemiJoinScan {
         }
     }
     public int getInt(String fldname) {
-        return prod.getInt(fldname);
+        if (hasField(fldname)) {
+            return prod.getInt(fldname);
+        } else {
+            throw new RuntimeException("field " + fldname + " not found.");
+        }
     }
     
     public String getString(String fldname) {
-        
+        if (hasField(fldname)) {
+            return prod.getString(fldname);
+        } else {
+            throw new RuntimeException("field " + fldname + " not found.");
+        }
     }
     
     public boolean hasField(String fldname) {
-    
+        if (fields.contains(fldname)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
