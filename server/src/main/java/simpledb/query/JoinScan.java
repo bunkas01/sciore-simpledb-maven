@@ -16,7 +16,6 @@ public class JoinScan implements Scan {
     public JoinScan(Scan s1, Scan s2, Predicate pred) {
         this.prod = new ProductScan(s1, s2);
         this.pred = pred;
-        prod.next();
     }
     
     public void beforeFirst() {

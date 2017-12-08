@@ -14,9 +14,9 @@ import simpledb.tx.Transaction;
  *
  * @author yasiro01
  */
-public class JoinScanTest {
+public class JoinTest {
   
-  public JoinScanTest() {
+  public JoinTest() {
   }
   
   @BeforeClass
@@ -61,6 +61,6 @@ public class JoinScanTest {
       System.out.println();
       records++;
     }
-    assertEquals(8, records);
+    assertEquals(9, records);
   }
 }
