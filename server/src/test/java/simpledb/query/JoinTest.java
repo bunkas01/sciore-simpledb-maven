@@ -38,7 +38,7 @@ public class JoinTest {
 
     
   @Test
-  public void testJoinScan() {
+  public void testJoin() {
     System.out.println("JOIN");
 //    String qry = "select sname from student join dept on majorid = did";
 //    Parser p = new Parser(qry);

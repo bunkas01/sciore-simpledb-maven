@@ -38,7 +38,7 @@ public class RenameScan implements Scan {
     
     public Constant getVal(String fldname) {
         if (hasField(fldname)) {
-            if (fldname == newName) {
+            if (fldname.equals(newName)) {
                 return s.getVal(oldName);
             } else {
                 return s.getVal(fldname);
@@ -50,7 +50,7 @@ public class RenameScan implements Scan {
     
     public int getInt(String fldname) {
         if (hasField(fldname)) {
-            if (fldname == newName) {
+            if (fldname.equals(newName)) {
                 return s.getInt(oldName);
             } else {
                 return s.getInt(fldname);
@@ -62,7 +62,7 @@ public class RenameScan implements Scan {
     
     public String getString(String fldname) {
         if (hasField(fldname)) {
-            if (fldname == newName) {
+            if (fldname.equals(newName)) {
                 return s.getString(oldName);
             } else {
                 return s.getString(fldname);

@@ -24,7 +24,7 @@ public class RenamePlan implements Plan {
         Collection<String> fieldlist = old.fields();
         oldFields = fieldlist;
         for (String fldname : fieldlist) {
-            if (fldname == oldName) {
+            if (fldname.equals(oldName)) {
                 schema.addField(newName, old.type(oldName), old.length(oldName));
             } else {
                 schema.add(fldname, old);
@@ -48,7 +48,7 @@ public class RenamePlan implements Plan {
     }
     
     public int distinctValues(String fldname) {
-        if (fldname == newName) {
+        if (fldname.equals(newName)) {
             return p.distinctValues(oldName);
         } else {
             return p.distinctValues(fldname);
